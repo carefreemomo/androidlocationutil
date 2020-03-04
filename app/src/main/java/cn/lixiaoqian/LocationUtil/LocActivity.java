@@ -92,28 +92,6 @@ public class LocActivity extends UnityPlayerActivity {
         }
     }
 
-//    public  void  OnLocation(final Context mcontext)
-//    {
-//        Log.i(TAG, "OnLocation:LocationUtil ");
-//        context=mcontext;
-//        targetSdkVersion = 0;
-//        try {
-//            final PackageInfo info = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-//            targetSdkVersion = info.applicationInfo.targetSdkVersion;
-//        } catch (PackageManager.NameNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                Log.i(TAG, "BindForegroundService: ()");
-//                BindForegroundService();
-//            } else {
-//                Log.i(TAG, "BindService: ()");
-//                BindService();
-//            }
-//        }
-//    }
-
     private class MyLocationListener implements LocationListener {
         private String latLongString;
 
@@ -165,68 +143,26 @@ public class LocActivity extends UnityPlayerActivity {
         }
     }
 
-
-    public void BindService(){
-        Log.i("Unity","BindService:");
-        startService(new Intent(context, MyJobService.class));
-    }
-
-    @TargetApi(Build.VERSION_CODES.O)
-    public void BindForegroundService(){
-        Log.i("Unity","BindForegroundService:");
-        startForegroundService(new Intent(context, MyJobService.class));
-    }
-//
-//    //解绑服务
-//    public void UnBindService(){
-//        Log.i("Unity","UnBindService:");
-//        stopService(new Intent(context, MyService.class));
-//    }
-//
-//    public void BindJobService(){
-//        Log.i("Unity","BindService:");
-//        Intent intent = new Intent(LocActivity.this,MyJobService.class);
-//        intent.putExtra("key","value");
-//        MyJobService.enqueueWork(LocActivity.this,intent);
-//    }
-
-
     @Override
     protected void onPause() {
         super.onPause();
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        boolean isScreenOn=false;
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            isScreenOn = powerManager.isInteractive();
-        } else {
-            isScreenOn = powerManager.isScreenOn();
-        }
-        if (!isScreenOn) {
-            Activity unityActivity = UnityPlayer.currentActivity;
-            unityActivity.moveTaskToBack(false);
-            mUnityPlayer.resume();
-            mUnityPlayer.windowFocusChanged(true);
-        }
+//        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+//        boolean isScreenOn=false;
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+//            isScreenOn = powerManager.isInteractive();
+//        } else {
+//            isScreenOn = powerManager.isScreenOn();
+//        }
+//        if (!isScreenOn) {
+//            Activity unityActivity = UnityPlayer.currentActivity;
+//            unityActivity.moveTaskToBack(false);
+//            mUnityPlayer.resume();
+//            mUnityPlayer.windowFocusChanged(true);
+//        }
     }
     @Override
     protected void onResume() {
         super.onResume();
-    }
-
-    private void AcquireWakeLock() {
-        if (wakeLock == null) {
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            wakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, this
-                    .getClass().getCanonicalName());
-            wakeLock.acquire();
-        }
-    }
-
-    private void ReleaseWakeLock() {
-        if (wakeLock != null && wakeLock.isHeld()) {
-            wakeLock.release();
-            wakeLock = null;
-        }
     }
 
     @Override
