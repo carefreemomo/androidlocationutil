@@ -31,6 +31,7 @@ import java.io.File;
 import java.util.List;
 import android.os.Bundle;
 
+import com.hiyorin.permission.PermissionPlugin;
 import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
 
@@ -126,6 +127,14 @@ public class LocActivity extends UnityPlayerActivity {
         public void onProviderDisabled(String provider) {
             // TODO Auto-generated method stub
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[],
+                                           int[] grantResults) {
+        Log.d("unity", "onRequestPermissionsResult: ------------------------------------");
+        PermissionPlugin.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     public void OnFullscreen(String enable) {
