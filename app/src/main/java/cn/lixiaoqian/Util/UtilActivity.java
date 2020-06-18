@@ -1,4 +1,4 @@
-package cn.lixiaoqian.LocationUtil;
+package cn.lixiaoqian.Util;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -41,7 +41,7 @@ import com.hiyorin.permission.PermissionPlugin;
 import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
 
-public class LocActivity extends UnityPlayerActivity {
+public class UtilActivity extends UnityPlayerActivity {
 
     private Context context;
     private static final String TAG = "Unity";
@@ -76,7 +76,7 @@ public class LocActivity extends UnityPlayerActivity {
         if (requestCode == GET_LOCATION) {
             for (int i = 0; i < grantResults.length; i++) {
                 if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                    AudioService.OnLocation(this);
+                    utilService.OnLocation(this);
                 } else {
                 }
             }
@@ -128,16 +128,16 @@ public class LocActivity extends UnityPlayerActivity {
 
 
     //region ###音乐后台服务
-    private AudioService.AudioServiceBinder audioServiceBinder;
-    private AudioService AudioService;
-    private ServiceConnection audioServiceConnection = new ServiceConnection() {
+    private UtilService.UtilServiceBinder utilServiceBinder;
+    private UtilService utilService;
+    private ServiceConnection utilServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             //服务与活动成功绑定
             Log.d(TAG, "服务与活动成功绑定");
-            audioServiceBinder = (AudioService.AudioServiceBinder) iBinder;
-            AudioService = audioServiceBinder.getService();
-            AudioService.SetContext(context);
+            utilServiceBinder = (UtilService.UtilServiceBinder) iBinder;
+            utilService = utilServiceBinder.getService();
+            utilService.SetContext(context);
         }
 
         @Override
@@ -151,14 +151,14 @@ public class LocActivity extends UnityPlayerActivity {
      */
     private void bindAudioService() {
         Log.d(TAG, "音乐后台服务");
-        Intent bindIntent = new Intent(context, AudioService.class);
-        bindService(bindIntent, audioServiceConnection, BIND_AUTO_CREATE);
+        Intent bindIntent = new Intent(context, UtilService.class);
+        bindService(bindIntent, utilServiceConnection, BIND_AUTO_CREATE);
     }
     /**
      * 启动服务
      */
     private void startAudioService() {
-        Intent intent = new Intent(context, AudioService.class);
+        Intent intent = new Intent(context, UtilService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             //android8.0以上通过startForegroundService启动service
             startForegroundService(intent);
@@ -166,27 +166,29 @@ public class LocActivity extends UnityPlayerActivity {
             startService(intent);
         }
     }
-    public void OnInitAudio(String url) {
-        Log.d(TAG, "播放");
-        AudioService.OnInitAudio(url);
-    }
+
 
     //endregion
 
     //region 音频方法
+    public void OnInitAudio(String url) {
+        Log.d(TAG, "播放");
+        utilService.OnInitAudio(url);
+    }
+
     public void OnPlayAudio(boolean isNetWork,String name) {
         Log.d(TAG, "播放");
-        AudioService.OnPlayAudio(isNetWork, name);
+        utilService.OnPlayAudio(isNetWork, name);
     }
 
     public void OnPauseAudio() {
         Log.d(TAG, "暂停");
-        AudioService.OnPauseAudio();
+        utilService.OnPauseAudio();
     }
 
     public void OnStopAudio() {
         Log.d(TAG, "结束");
-        AudioService.OnStopAudio();
+        utilService.OnStopAudio();
     }
     //endregion
 
@@ -194,24 +196,24 @@ public class LocActivity extends UnityPlayerActivity {
     //定位
     public void OnLocation()
     {
-        AudioService.OnLocation(this);
+        utilService.OnLocation(this);
     }
 
     //检测距离
     public void OnMinDistance(float minDis)
     {
-        AudioService.OnMinDistance(minDis);
+        utilService.OnMinDistance(minDis);
     }
 
     public void SetPlay(double lng,double lat)
     {
-        AudioService.SetPlay(lng,lat);
+        utilService.SetPlay(lng,lat);
     }
 
     //音频触发列表
     public void OnVoiceLocationInfo(String voiceInfo)
     {
-        AudioService.OnVoiceLocationInfo(voiceInfo);
+        utilService.OnVoiceLocationInfo(voiceInfo);
     }
     //endregion
 }

@@ -1,4 +1,4 @@
-package cn.lixiaoqian.LocationUtil;
+package cn.lixiaoqian.Util;
 
 
 import android.Manifest;
@@ -43,6 +43,7 @@ public class LocationHelp extends Activity {
     };
     private List<String> PlayVoiceList = new LinkedList<String>();
     private List<VoiceLocation> VoiceLocationList = new LinkedList<VoiceLocation>();
+    private List<VoiceLocation> HadVoiceLocationList = new LinkedList<VoiceLocation>();
     private float minArriveDistance = 15;
 
     @Override
@@ -198,13 +199,16 @@ public class LocationHelp extends Activity {
                 befoerVoiceLocation = curVoiceLocation;
                 Log.d(TAG,befoerVoiceLocation.id+"|"+curVoiceLocation.id);
                 Log.d(TAG,PlayVoiceList.size()+"");
-                if (curVoiceLocation.arrive_audio != null && curVoiceLocation.arrive_audio != "") {
+                if (curVoiceLocation.arrive_audio != null && curVoiceLocation.arrive_audio != ""
+                        && !PlayVoiceList.contains(curVoiceLocation.arrive_audio)) {
                     PlayVoiceList.add(curVoiceLocation.arrive_audio);
                 }
-                if (curVoiceLocation.next_audio != null && curVoiceLocation.next_audio != "") {
+                if (curVoiceLocation.next_audio != null && curVoiceLocation.next_audio != ""
+                        && !PlayVoiceList.contains(curVoiceLocation.next_audio)) {
                     PlayVoiceList.add(curVoiceLocation.next_audio);
                 }
-                if (curVoiceLocation.commentary_audio != null && curVoiceLocation.commentary_audio != "") {
+                if (curVoiceLocation.commentary_audio != null && curVoiceLocation.commentary_audio != ""
+                        && !PlayVoiceList.contains(curVoiceLocation.commentary_audio)) {
                     PlayVoiceList.add(curVoiceLocation.commentary_audio);
                 }
                 PlayVoice();

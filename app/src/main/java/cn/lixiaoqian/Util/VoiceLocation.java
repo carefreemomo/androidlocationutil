@@ -1,4 +1,4 @@
-package cn.lixiaoqian.LocationUtil;
+package cn.lixiaoqian.Util;
 
 class VoiceLocation {
     public int id;

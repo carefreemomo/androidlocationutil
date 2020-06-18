@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="cn.lixiaoqian.LocationUtil">
+    package="cn.lixiaoqian.Util">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <application
         android:allowBackup="true">
-        <activity android:launchMode="singleTop" android:name="cn.lixiaoqian.LocationUtil.LocActivity">
+        <activity android:launchMode="singleTop" android:name="cn.lixiaoqian.Util.UtilActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -21,12 +21,9 @@
             <meta-data android:name="unityplayer.UnityActivity" android:value="true"/>
         </activity>
         <service
-            android:name="cn.lixiaoqian.LocationUtil.AudioService"
+            android:name="cn.lixiaoqian.Util.UtilService"
             android:enabled="true"
-            android:exported="true" />  <service
-        android:name="cn.lixiaoqian.LocationUtil.LocationService"
-        android:enabled="true"
-        android:exported="true" />
+            android:exported="true" />
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package cn.lixiaoqian.LocationUtil;
+package cn.lixiaoqian.Util;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
