@@ -66,7 +66,6 @@ public class UtilService extends Service {
 
 
 
-
     //用于Activity和service通讯
     class UtilServiceBinder extends Binder {
         public UtilService getService() {
@@ -77,6 +76,7 @@ public class UtilService extends Service {
     public void SetContext(Context ctt)
     {
         context = ctt;
+        audioHelper.AudioContext(context);
     }
 
     private String locationProvider;
@@ -127,7 +127,7 @@ public class UtilService extends Service {
         @Override
         public void run() {
             // handler自带方法实现定时器
-            Log.d("Unity", "后台开始播放音乐");
+            //Log.d("Unity", "后台开始播放音乐");
             //OnPlayAudio(false,"Mapbackground.mp3");
             //OnPlayAudio(true,"http://cdn.lixiaoqian.com/gulangyu/audio/640894fb683511cfb486364dddd9620d.mp3");
             handler.postDelayed(this, 1000*10);//每隔3s执行
@@ -160,9 +160,9 @@ public class UtilService extends Service {
     public void OnPlayAudio(boolean isNetWork,String name){
         try {
             if (!isNetWork) {
-                audioHelper.Play(context,name);
+                audioHelper.Play(0,name);
             } else {
-                audioHelper.PlayNetWork(name);
+                audioHelper.PlayNetWork(0,name);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -177,6 +177,11 @@ public class UtilService extends Service {
         audioHelper.Stop();
     }
 
+    public void SetVolume(float value)
+    {
+        audioHelper.SetVolume(value);
+    }
+
     public void OnLocation(Activity activity){
         locationHelp.InitData(context,locationManager,locationProvider,audioHelper);
         locationHelp.OnLocation(activity);
@@ -186,11 +191,40 @@ public class UtilService extends Service {
         locationHelp.OnMinDistance(minDis);
     }
 
+    public void OnVoiceLocationInfo(String voiceInfo) {  locationHelp.OnVoiceLocationInfo(voiceInfo);
+    }
+
+    public void OnStationSites(String siteInfos) {
+        locationHelp.OnStationSites(siteInfos);
+    }
+
     public void SetPlay(double lng, double lat) {
         locationHelp.SetPlay(lng,lat);
     }
 
-    public void OnVoiceLocationInfo(String voiceInfo) {
-        locationHelp.OnVoiceLocationInfo(voiceInfo);
+    public void SetPause()
+    {
+        locationHelp.SetPause();
+    }
+
+    public void SetContinue()
+    {
+        locationHelp.SetContinue();
+    }
+
+    public void SetNext() {
+        locationHelp.SetNext();
+    }
+
+    public void SetStop() {
+        locationHelp.SetStop();
+    }
+
+    public void SetOn(boolean isOn) {
+        locationHelp.SetOn(isOn);
+    }
+
+    public void Reset() {
+        locationHelp.Reset();
     }
 }

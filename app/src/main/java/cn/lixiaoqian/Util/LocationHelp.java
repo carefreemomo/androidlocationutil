@@ -34,8 +34,8 @@ public class LocationHelp extends Activity {
     private AudioHelper audioHelper;
     private Context context;
     private int targetSdkVersion;
+    private boolean isAutoAudio=false;
     private static final String TAG = "Unity";
-
     private static final int GET_LOCATION = 1011;
     private static String[] PERMISSION_LOCATION = {
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -44,6 +44,7 @@ public class LocationHelp extends Activity {
     private List<String> PlayVoiceList = new LinkedList<String>();
     private List<VoiceLocation> VoiceLocationList = new LinkedList<VoiceLocation>();
     private List<VoiceLocation> HadVoiceLocationList = new LinkedList<VoiceLocation>();
+    private List<StationSite> StationSiteList = new LinkedList<StationSite>();
     private float minArriveDistance = 15;
 
     @Override
@@ -51,11 +52,11 @@ public class LocationHelp extends Activity {
         super.onCreate(savedInstanceState);
     }
 
-    public void InitData(Context context, LocationManager locationManager, String locationProvider, AudioHelper audioHelper) {
+    public void InitData(Context context, LocationManager locationManager, String locationProvider,AudioHelper audioHelper) {
         this.context = context;
         this.locationManager = locationManager;
         this.locationProvider = locationProvider;
-        this.audioHelper = audioHelper;
+        this.audioHelper =  audioHelper;
         this.audioHelper.setListener(new AudioHelper.onListener() {
             @Override
             public void OnStartListener() {
@@ -91,7 +92,7 @@ public class LocationHelp extends Activity {
         } else {
             ret = true;
         }
-        Log.d(TAG, "locationManager：" + ret);
+        //Log.d(TAG, "locationManager：" + ret);
         if (ret) {
             myLocationListener = new MyLocationListener();
             locationManager.requestLocationUpdates(locationProvider, 0, 0, myLocationListener);
@@ -109,12 +110,14 @@ public class LocationHelp extends Activity {
         Gson gson = new Gson();
         List<VoiceLocation> list = gson.fromJson(voiceInfo, new TypeToken<List<VoiceLocation>>() {
         }.getType());
-        if (!list.isEmpty()) {
-            Log.d(TAG, "OnVoiceLocationInfo: " + list.get(0).name);
-        }
         this.VoiceLocationList = list;
     }
-
+    public void OnStationSites(String siteInfos) {
+        Gson gson = new Gson();
+        List<StationSite> list = gson.fromJson(siteInfos, new TypeToken<List<StationSite>>() {
+        }.getType());
+        this.StationSiteList = list;
+    }
     private static double EARTH_RADIUS = 6378.137f;
 
     private static double rad(double d) {
@@ -134,6 +137,8 @@ public class LocationHelp extends Activity {
         return s;
     }
 
+
+
     private class MyLocationListener implements LocationListener {
         private String latLongString;
 
@@ -146,9 +151,9 @@ public class LocationHelp extends Activity {
             final double latitude = location.getLatitude();//获取纬度，平行
             final double longitude = location.getLongitude();//获取经度，垂直
             latLongString = latitude + "|" + longitude;
-            Log.d(TAG, "locationService onLocationChanged: " + latLongString);
+            //Log.d(TAG, "locationService onLocationChanged: " + latLongString);
             UnityPlayer.UnitySendMessage("LocationManager", "LocResult", latLongString);
-            SetPlay(longitude,latitude);
+            SetPlay(longitude, latitude);
         }
 
         //当定位状态发生改变的时候调用的方式
@@ -176,6 +181,9 @@ public class LocationHelp extends Activity {
     VoiceLocation befoerVoiceLocation = null;
 
     public void SetPlay(Double longitude,Double latitude ) {
+        if (!isAutoAudio) {
+            return;
+        }
         if (VoiceLocationList != null && !VoiceLocationList.isEmpty()) {
             double minDis = 1000000;
             VoiceLocation curVoiceLocation = null;
@@ -189,23 +197,38 @@ public class LocationHelp extends Activity {
                     curVoiceLocation = voiceLocation;
                 }
             }
-            if (befoerVoiceLocation != null && curVoiceLocation!=null && befoerVoiceLocation.id == curVoiceLocation.id) {
+            if (befoerVoiceLocation != null && curVoiceLocation != null && befoerVoiceLocation.id == curVoiceLocation.id) {
                 return;
             }
             double log = Double.parseDouble(curVoiceLocation.pos_in_unity_map.split(",")[0]);
             double lat = Double.parseDouble(curVoiceLocation.pos_in_unity_map.split(",")[1]);
             double dis = GetDistance(latitude, longitude, lat, log);
             if (dis < this.minArriveDistance) {
+                if (!HadVoiceLocationList.contains(curVoiceLocation)) {
+                    HadVoiceLocationList.add(curVoiceLocation);
+                    for (int i = 0; i < StationSiteList.size(); i++) {
+                        {
+                            if (curVoiceLocation.type==1&&StationSiteList.get(i).tourism_site_id == curVoiceLocation.id) {
+                                Log.d(TAG, "SetPlay0: "+curVoiceLocation.id);
+                                Log.d(TAG, "SetPlay1: "+StationSiteList.get(i).is_complete);
+                                StationSiteList.get(i).is_complete = true;
+                            }
+                        }
+                    }
+                } else {
+                    return;
+                }
                 befoerVoiceLocation = curVoiceLocation;
-                Log.d(TAG,befoerVoiceLocation.id+"|"+curVoiceLocation.id);
-                Log.d(TAG,PlayVoiceList.size()+"");
+                SetStop();
+                Log.d(TAG, befoerVoiceLocation.id + "|" + curVoiceLocation.id);
+                Log.d(TAG, PlayVoiceList.size() + "");
                 if (curVoiceLocation.arrive_audio != null && curVoiceLocation.arrive_audio != ""
                         && !PlayVoiceList.contains(curVoiceLocation.arrive_audio)) {
                     PlayVoiceList.add(curVoiceLocation.arrive_audio);
                 }
-                if (curVoiceLocation.next_audio != null && curVoiceLocation.next_audio != ""
-                        && !PlayVoiceList.contains(curVoiceLocation.next_audio)) {
-                    PlayVoiceList.add(curVoiceLocation.next_audio);
+                String nextAudio = AddSiteNextAudio(curVoiceLocation);
+                if (nextAudio != "" && !PlayVoiceList.contains(nextAudio)) {
+                    PlayVoiceList.add(nextAudio);
                 }
                 if (curVoiceLocation.commentary_audio != null && curVoiceLocation.commentary_audio != ""
                         && !PlayVoiceList.contains(curVoiceLocation.commentary_audio)) {
@@ -214,6 +237,57 @@ public class LocationHelp extends Activity {
                 PlayVoice();
             }
         }
+    }
+
+    private String  AddSiteNextAudio(VoiceLocation curVoiceLocation) {
+        int nextIndex=-1;
+        //Log.d(TAG, "AddSiteNextAudio: "+curVoiceLocation.id+"|"+curVoiceLocation.type);
+        if (curVoiceLocation.type == 1) {
+            Log.d(TAG, "AddSiteNextAudio: "+StationSiteList.size());
+            Log.d(TAG, "AddSiteNextAudio2: "+curVoiceLocation.id);
+            for(int i=0;i<StationSiteList.size();i++) {
+                Log.d(TAG, "AddSiteNextAudio5: "+StationSiteList.get(i).tourism_site_id+"|"+StationSiteList.get(i).is_complete);
+            }
+            for(int i=0;i<StationSiteList.size();i++)
+            {
+                boolean isExist=false;
+                if(StationSiteList.get(i).tourism_site_id==curVoiceLocation.id)
+                {
+                    for(int j=i+1;j<StationSiteList.size();j++)
+                    {
+                        Log.d(TAG, "AddSiteNextAudio3: "+StationSiteList.get(j).tourism_site_id);
+                        Log.d(TAG, "AddSiteNextAudio4: "+StationSiteList.get(j).is_complete);
+                        if(!StationSiteList.get(j).is_complete)
+                        {
+                            isExist=true;
+                            nextIndex=j;
+                            break;
+                        }
+                    }
+                    if(!isExist)
+                    {
+                        for(int j=i-1;j>0;j--)
+                        {
+                            if(!StationSiteList.get(j).is_complete)
+                            {
+                                nextIndex=j;
+                                isExist=true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+           if(nextIndex!=-1)
+           {
+               return  StationSiteList.get(nextIndex).next_audio;
+           }
+           else
+           {
+                return "";
+           }
+        }
+        return "";
     }
 
     public void SetPause()
@@ -226,27 +300,48 @@ public class LocationHelp extends Activity {
     public void SetNext()
     {
         if (PlayVoiceList.size() > 1) {
+            SetPause();
+            PlayVoiceList.remove(0);
             PlayVoice();
         }
         else if(PlayVoiceList.size() > 0)
         {
-            audioHelper.Pause();
+            SetStop();
+        }
+    }
+
+    public void SetContinue()
+    {
+        if(PlayVoiceList.size() > 0)
+        {
+            audioHelper.Continue();
         }
     }
 
     public void SetStop()
     {
         audioHelper.Stop();
+        PlayVoiceList.clear();
     }
 
     public void PlayVoice() {
-        Log.d(TAG, "PlayVoice: "+PlayVoiceList.size());
+        //Log.d(TAG, "PlayVoice: "+PlayVoiceList.size());
         try {
             if (PlayVoiceList.size() > 0) {
-                audioHelper.PlayNetWork(PlayVoiceList.get(0));
+                audioHelper.PlayNetWork(0,PlayVoiceList.get(0));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void SetOn(boolean isOn)
+    {
+        isAutoAudio=isOn;
+    }
+
+    public void Reset()
+    {
+        PlayVoiceList.clear();
     }
 }

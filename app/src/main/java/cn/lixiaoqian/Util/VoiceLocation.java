@@ -5,7 +5,7 @@ class VoiceLocation {
 
     public String name;
 
-    public ArrivePoiType type ;
+    public int type ;
 
     public String pos_in_unity_map;
 
@@ -29,4 +29,13 @@ enum ArrivePoiType {
     ClockPoi,//提示
     RecommendPoi,//推荐
     ARExplorePoi,//AR点
+}
+
+class StationSite
+{
+    public int tourism_site_id;
+
+    public boolean is_complete;
+
+    public String next_audio;
 }

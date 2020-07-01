@@ -190,6 +190,11 @@ public class UtilActivity extends UnityPlayerActivity {
         Log.d(TAG, "结束");
         utilService.OnStopAudio();
     }
+
+    public void SetVolume(float value)
+    {
+        utilService.SetVolume(value);
+    }
     //endregion
 
     //region 定位方法
@@ -205,15 +210,44 @@ public class UtilActivity extends UnityPlayerActivity {
         utilService.OnMinDistance(minDis);
     }
 
+    //音频触发列表
+    public void OnVoiceLocationInfo(String voiceInfo) { utilService.OnVoiceLocationInfo(voiceInfo); }
+
+    public  void  OnStationSites(String SiteInfos) { utilService.OnStationSites(SiteInfos);  }
+
     public void SetPlay(double lng,double lat)
     {
         utilService.SetPlay(lng,lat);
     }
 
-    //音频触发列表
-    public void OnVoiceLocationInfo(String voiceInfo)
+    public void SetPause()
     {
-        utilService.OnVoiceLocationInfo(voiceInfo);
+        utilService.SetPause();
+    }
+
+    public void SetContinue()
+    {
+        utilService.SetContinue();
+    }
+
+    public void SetNext()
+    {
+        utilService.SetNext();
+    }
+
+    public void SetStop()
+    {
+        utilService.SetStop();
+    }
+
+    public void SetOn(boolean isOn)
+    {
+        utilService.SetOn(isOn);
+    }
+
+    public void Reset()
+    {
+        utilService.Reset();
     }
     //endregion
 }
