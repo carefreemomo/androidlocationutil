@@ -1,25 +1,13 @@
 package cn.lixiaoqian.Util;
+import java.util.List;
 
 class VoiceLocation {
     public int id;
-
-    public String name;
-
-    public int type ;
-
-    public String pos_in_unity_map;
-
-    public String commentary_audio;
-
-    public String arrive_audio;
-
-    public String next_audio;
-
-    public boolean is_explore ;
-
-    public int explore_id;
-
-    public String content;
+    public int type;
+    public String gps ;
+    public Boolean is_explore;
+    public Boolean is_once;
+    public List<String> audios;
 }
 
 enum ArrivePoiType {
@@ -29,13 +17,4 @@ enum ArrivePoiType {
     ClockPoi,//提示
     RecommendPoi,//推荐
     ARExplorePoi,//AR点
-}
-
-class StationSite
-{
-    public int tourism_site_id;
-
-    public boolean is_complete;
-
-    public String next_audio;
 }

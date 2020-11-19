@@ -34,7 +34,7 @@ public class LocationHelp extends Activity {
     private AudioHelper audioHelper;
     private Context context;
     private int targetSdkVersion;
-    private boolean isAutoAudio=false;
+    private boolean isAutoAudio=true;
     private static final String TAG = "Unity";
     private static final int GET_LOCATION = 1011;
     private static String[] PERMISSION_LOCATION = {
@@ -44,7 +44,6 @@ public class LocationHelp extends Activity {
     private List<String> PlayVoiceList = new LinkedList<String>();
     private List<VoiceLocation> VoiceLocationList = new LinkedList<VoiceLocation>();
     private List<VoiceLocation> HadVoiceLocationList = new LinkedList<VoiceLocation>();
-    private List<StationSite> StationSiteList = new LinkedList<StationSite>();
     private float minArriveDistance = 15;
 
     @Override
@@ -61,7 +60,7 @@ public class LocationHelp extends Activity {
             @Override
             public void OnStartListener() {
                 UnityPlayer.UnitySendMessage("LocationManager", "StartResult", "");
-            }
+        }
             @Override
             public void OnEndListener() {
                 UnityPlayer.UnitySendMessage("LocationManager", "EndResult", "");
@@ -69,6 +68,11 @@ public class LocationHelp extends Activity {
                     PlayVoiceList.remove(0);
                 }
                 PlayVoice();
+            }
+
+            @Override
+            public void OnProgress(float progress) {
+
             }
         });
     }
@@ -100,44 +104,6 @@ public class LocationHelp extends Activity {
             ActivityCompat.requestPermissions(activity, PERMISSION_LOCATION, GET_LOCATION);
         }
     }
-
-    public void OnMinDistance(float minDistance)
-    {
-        this.minArriveDistance = minDistance;
-    }
-
-    public void OnVoiceLocationInfo(String voiceInfo) {
-        Gson gson = new Gson();
-        List<VoiceLocation> list = gson.fromJson(voiceInfo, new TypeToken<List<VoiceLocation>>() {
-        }.getType());
-        this.VoiceLocationList = list;
-    }
-    public void OnStationSites(String siteInfos) {
-        Gson gson = new Gson();
-        List<StationSite> list = gson.fromJson(siteInfos, new TypeToken<List<StationSite>>() {
-        }.getType());
-        this.StationSiteList = list;
-    }
-    private static double EARTH_RADIUS = 6378.137f;
-
-    private static double rad(double d) {
-        return d * Math.PI / 180.0;
-    }
-
-    //gps距离计算
-    public static double GetDistance(double lat1, double lng1, double lat2, double lng2) {
-        double radLat1 = rad(lat1);
-        double radLat2 = rad(lat2);
-        double a = radLat1 - radLat2;
-        double b = rad(lng1) - rad(lng2);
-        double s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2) +
-                Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b / 2), 2)));
-        s = s * EARTH_RADIUS;
-        s = Math.round(s * 10000) / 10;
-        return s;
-    }
-
-
 
     private class MyLocationListener implements LocationListener {
         private String latLongString;
@@ -178,9 +144,41 @@ public class LocationHelp extends Activity {
         }
     }
 
+    public void OnMinDistance(float minDistance)
+    {
+        this.minArriveDistance = minDistance;
+    }
+
+    public void OnVoiceLocationInfo(String voiceInfo) {
+        Gson gson = new Gson();
+        List<VoiceLocation> list = gson.fromJson(voiceInfo, new TypeToken<List<VoiceLocation>>() {
+        }.getType());
+        this.VoiceLocationList = list;
+    }
+
     VoiceLocation befoerVoiceLocation = null;
 
+    private static double EARTH_RADIUS = 6378.137f;
+
+    private static double rad(double d) {
+        return d * Math.PI / 180.0;
+    }
+
+    //gps距离计算
+    public static double GetDistance(double lat1, double lng1, double lat2, double lng2) {
+        double radLat1 = rad(lat1);
+        double radLat2 = rad(lat2);
+        double a = radLat1 - radLat2;
+        double b = rad(lng1) - rad(lng2);
+        double s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2) +
+                Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b / 2), 2)));
+        s = s * EARTH_RADIUS;
+        s = Math.round(s * 10000) / 10;
+        return s;
+    }
+
     public void SetPlay(Double longitude,Double latitude ) {
+//        Log.d(TAG, "VoiceLocationList1: "+VoiceLocationList.size());
         if (!isAutoAudio) {
             return;
         }
@@ -189,105 +187,44 @@ public class LocationHelp extends Activity {
             VoiceLocation curVoiceLocation = null;
             for (int i = 0; i < VoiceLocationList.size(); i++) {
                 VoiceLocation voiceLocation = VoiceLocationList.get(i);
-                double log = Double.parseDouble(voiceLocation.pos_in_unity_map.split(",")[0]);
-                double lat = Double.parseDouble(voiceLocation.pos_in_unity_map.split(",")[1]);
+//                Log.d(TAG, "VoiceLocationList3: " + voiceLocation.gps);
+                double log = Double.parseDouble(voiceLocation.gps.split(",")[0]);
+                double lat = Double.parseDouble(voiceLocation.gps.split(",")[1]);
                 double dis = GetDistance(latitude, longitude, lat, log);
                 if (minDis > dis) {
                     minDis = dis;
                     curVoiceLocation = voiceLocation;
                 }
             }
-            if (befoerVoiceLocation != null && curVoiceLocation != null && befoerVoiceLocation.id == curVoiceLocation.id) {
+            if (befoerVoiceLocation != null && curVoiceLocation != null
+                    && befoerVoiceLocation.type == curVoiceLocation.type
+                    && befoerVoiceLocation.id == curVoiceLocation.id) {
                 return;
             }
-            double log = Double.parseDouble(curVoiceLocation.pos_in_unity_map.split(",")[0]);
-            double lat = Double.parseDouble(curVoiceLocation.pos_in_unity_map.split(",")[1]);
+
+//            Log.d(TAG, "curVoiceLocation: "+curVoiceLocation.gps);
+//            Log.d(TAG, "latitude: "+latitude+"|longitude"+longitude);
+            double log = Double.parseDouble(curVoiceLocation.gps.split(",")[0]);
+            double lat = Double.parseDouble(curVoiceLocation.gps.split(",")[1]);
             double dis = GetDistance(latitude, longitude, lat, log);
+//            Log.d(TAG, "dis: "+dis);
             if (dis < this.minArriveDistance) {
                 if (!HadVoiceLocationList.contains(curVoiceLocation)) {
-                    HadVoiceLocationList.add(curVoiceLocation);
-                    for (int i = 0; i < StationSiteList.size(); i++) {
-                        {
-                            if (curVoiceLocation.type==1&&StationSiteList.get(i).tourism_site_id == curVoiceLocation.id) {
-                                Log.d(TAG, "SetPlay0: "+curVoiceLocation.id);
-                                Log.d(TAG, "SetPlay1: "+StationSiteList.get(i).is_complete);
-                                StationSiteList.get(i).is_complete = true;
-                            }
-                        }
+                    if (curVoiceLocation.is_once) {
+                        HadVoiceLocationList.add(curVoiceLocation);
                     }
-                } else {
+                }
+                else
+                {
                     return;
                 }
                 befoerVoiceLocation = curVoiceLocation;
+//                Log.d(TAG, "curVoiceLocation2: "+curVoiceLocation.audios);
                 SetStop();
-                Log.d(TAG, befoerVoiceLocation.id + "|" + curVoiceLocation.id);
-                Log.d(TAG, PlayVoiceList.size() + "");
-                if (curVoiceLocation.arrive_audio != null && curVoiceLocation.arrive_audio != ""
-                        && !PlayVoiceList.contains(curVoiceLocation.arrive_audio)) {
-                    PlayVoiceList.add(curVoiceLocation.arrive_audio);
-                }
-                String nextAudio = AddSiteNextAudio(curVoiceLocation);
-                if (nextAudio != "" && !PlayVoiceList.contains(nextAudio)) {
-                    PlayVoiceList.add(nextAudio);
-                }
-                if (curVoiceLocation.commentary_audio != null && curVoiceLocation.commentary_audio != ""
-                        && !PlayVoiceList.contains(curVoiceLocation.commentary_audio)) {
-                    PlayVoiceList.add(curVoiceLocation.commentary_audio);
-                }
+                PlayVoiceList.addAll(curVoiceLocation.audios);
                 PlayVoice();
             }
         }
-    }
-
-    private String  AddSiteNextAudio(VoiceLocation curVoiceLocation) {
-        int nextIndex=-1;
-        //Log.d(TAG, "AddSiteNextAudio: "+curVoiceLocation.id+"|"+curVoiceLocation.type);
-        if (curVoiceLocation.type == 1) {
-            Log.d(TAG, "AddSiteNextAudio: "+StationSiteList.size());
-            Log.d(TAG, "AddSiteNextAudio2: "+curVoiceLocation.id);
-            for(int i=0;i<StationSiteList.size();i++) {
-                Log.d(TAG, "AddSiteNextAudio5: "+StationSiteList.get(i).tourism_site_id+"|"+StationSiteList.get(i).is_complete);
-            }
-            for(int i=0;i<StationSiteList.size();i++)
-            {
-                boolean isExist=false;
-                if(StationSiteList.get(i).tourism_site_id==curVoiceLocation.id)
-                {
-                    for(int j=i+1;j<StationSiteList.size();j++)
-                    {
-                        Log.d(TAG, "AddSiteNextAudio3: "+StationSiteList.get(j).tourism_site_id);
-                        Log.d(TAG, "AddSiteNextAudio4: "+StationSiteList.get(j).is_complete);
-                        if(!StationSiteList.get(j).is_complete)
-                        {
-                            isExist=true;
-                            nextIndex=j;
-                            break;
-                        }
-                    }
-                    if(!isExist)
-                    {
-                        for(int j=i-1;j>0;j--)
-                        {
-                            if(!StationSiteList.get(j).is_complete)
-                            {
-                                nextIndex=j;
-                                isExist=true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-           if(nextIndex!=-1)
-           {
-               return  StationSiteList.get(nextIndex).next_audio;
-           }
-           else
-           {
-                return "";
-           }
-        }
-        return "";
     }
 
     public void SetPause()
@@ -325,9 +262,10 @@ public class LocationHelp extends Activity {
     }
 
     public void PlayVoice() {
-        //Log.d(TAG, "PlayVoice: "+PlayVoiceList.size());
+//        Log.d(TAG, "PlayVoiceLength: "+PlayVoiceList.size());
         try {
             if (PlayVoiceList.size() > 0) {
+//                Log.d(TAG, "PlayVoice: "+PlayVoiceList.get(0));
                 audioHelper.PlayNetWork(0,PlayVoiceList.get(0));
             }
         } catch (IOException e) {

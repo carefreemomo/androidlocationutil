@@ -27,6 +27,7 @@ import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -83,19 +84,20 @@ public class UtilActivity extends UnityPlayerActivity {
         }
     }
 
-    public void OnFullscreen(String enable) {
+    public void OnFullscreen(final String enable) {
         Log.i(TAG, "OnFullscreen: ()"+enable);
-        if (enable=="1") { //显示状态栏
-            WindowManager.LayoutParams lp = getWindow().getAttributes();
-            lp.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
-            getWindow().setAttributes(lp);
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        } else { //隐藏状态栏
-            WindowManager.LayoutParams lp = getWindow().getAttributes();
-            lp.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            getWindow().setAttributes(lp);
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        }
+        mUnityPlayer.currentActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (enable == "1") {
+                    //全屏
+                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                } else {
+                    // 非全屏
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                }
+            }
+        });
     }
 
     @Override
@@ -191,9 +193,19 @@ public class UtilActivity extends UnityPlayerActivity {
         utilService.OnStopAudio();
     }
 
+    public void OnContinueAudio() {
+        Log.d(TAG, "继续");
+        utilService.OnContinueAudio();
+    }
+
     public void SetVolume(float value)
     {
         utilService.SetVolume(value);
+    }
+
+    public int GetPlayStatus(String url)
+    {
+        return utilService.GetPlayStatus(url);
     }
     //endregion
 
@@ -212,8 +224,6 @@ public class UtilActivity extends UnityPlayerActivity {
 
     //音频触发列表
     public void OnVoiceLocationInfo(String voiceInfo) { utilService.OnVoiceLocationInfo(voiceInfo); }
-
-    public  void  OnStationSites(String SiteInfos) { utilService.OnStationSites(SiteInfos);  }
 
     public void SetPlay(double lng,double lat)
     {

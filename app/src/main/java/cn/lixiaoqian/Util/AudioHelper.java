@@ -16,7 +16,7 @@ public class AudioHelper extends Activity {
     private static final String TAG = "Unity";
     private Context context;
     public int CurIndex;
-    public String CurUrl;
+    public String CurUrl="";
     public void AudioContext(Context ctt)
     {
         context= ctt;
@@ -56,11 +56,24 @@ public class AudioHelper extends Activity {
                 }
             }
         });
+        mediaPlayer.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
+            @Override
+            public void onBufferingUpdate(MediaPlayer mp, int percent) {
+                if(listener!=null)
+                {
+                    listener.OnProgress(percent);
+                    UnityPlayer.UnitySendMessage("AudioManager", "MobileAudioProgress", Integer.toString(percent));
+                }
+            }
+        });
     }
 
     public void PlayNetWork(final int index,final String url) throws IOException {
         Log.d(TAG, "播放网络音乐");
-        CurUrl=url;
+        CurIndex = index;
+        if(url != CurUrl) {
+            CurUrl = url;
+        }
         mediaPlayer.reset();
         mediaPlayer.setDataSource(headUrl + url);//设置播放的数据源。
         Log.d(TAG, "PlayNetWork: " + headUrl + "|" + url);
@@ -80,6 +93,8 @@ public class AudioHelper extends Activity {
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
+                CurUrl="";
+                CurIndex=0;
                 Log.d(TAG, "结束播放网络音乐");
                 UnityPlayer.UnitySendMessage("AudioManager", "MobileAudioEnd", "");
                 if (listener != null) {
@@ -87,9 +102,35 @@ public class AudioHelper extends Activity {
                 }
             }
         });
+
+        Thread thread=new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try {
+                    while (true) {
+//                        Log.i(TAG, "run: "+mediaPlayer.getCurrentPosition());
+//                        Log.i(TAG, "run: "+mediaPlayer.getDuration());
+                        Thread.sleep(500);// 线程暂停10秒，单位毫秒
+                        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                            float percent = (float)(mediaPlayer.getCurrentPosition()) / (float)(mediaPlayer.getDuration()) * 100;
+//                            Log.i(TAG, "run2: "+percent);
+                            UnityPlayer.UnitySendMessage("AudioManager", "MobileAudioProgress", Float.toString(percent));
+                            if (listener != null) {
+                                listener.OnProgress(percent);
+                            }
+                        }
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
     }
 
-    public void Pause() {
+        public void Pause() {
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             CurIndex=mediaPlayer.getCurrentPosition();
@@ -98,20 +139,25 @@ public class AudioHelper extends Activity {
 
     public void Continue()
     {
-        if(!mediaPlayer.isPlaying())
+        if(GetPlayStatus(CurUrl)==2)
         {
-            try {
-                PlayNetWork(CurIndex,CurUrl);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            mediaPlayer.seekTo(CurIndex);
+            mediaPlayer.start();
         }
     }
 
-    public void Stop()
-    {
-        if(mediaPlayer.isPlaying())
+    public void Stop() {
+        if(mediaPlayer==null)
+        {
+            Log.i(TAG, "Stop1: ");
+            return;
+        }
+        Log.i(TAG, "Stop2: "+mediaPlayer.isPlaying());
+        if (mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
+            CurUrl="";
+            CurIndex=0;
+        }
     }
 
     public void SetVolume(float value)
@@ -120,6 +166,22 @@ public class AudioHelper extends Activity {
         {
             mediaPlayer.setVolume(value,value);
         }
+    }
+
+    public int GetPlayStatus(String url) {
+        //未播放
+        int playing =0;
+        //播放
+        if(mediaPlayer.isPlaying()&&CurUrl.equals(url))
+        {
+            playing=1;
+        }
+        //暂停
+        else if( !mediaPlayer.isPlaying()&&CurUrl.equals(url)&&CurIndex!=0)
+        {
+            playing =2;
+        }
+        return playing;
     }
 
     public void InitUrl(String url) {
@@ -132,6 +194,7 @@ public class AudioHelper extends Activity {
     public interface onListener{
         void OnStartListener();
         void OnEndListener();
+        void OnProgress(float progress);
     }
     /**
      *定义一个变量储存数据

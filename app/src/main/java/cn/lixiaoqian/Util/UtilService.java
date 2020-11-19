@@ -45,25 +45,24 @@ public class UtilService extends Service {
     NotificationManager notificationManager;
     String notificationId = "channelId1";
     String notificationName = "channelName1";
-    private  Context context;
+    private Context context;
     private static final String TAG = "Unity";
-    public void startForegroundService()
-    {
+
+    public void startForegroundService() {
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(notificationId, notificationName, NotificationManager.IMPORTANCE_HIGH);
             notificationManager.createNotificationChannel(channel);
         }
 
         //设置Notification的ChannelID,否则不能正常显示
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Notification.Builder builder = new Notification.Builder(getApplicationContext(),"id1");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder builder = new Notification.Builder(getApplicationContext(), "id1");
             builder.setChannelId(notificationId);
             Notification notification = builder.build();
-            startForeground(GRAY_SERVICE_ID,notification);
+            startForeground(GRAY_SERVICE_ID, notification);
         }
     }
-
 
 
     //用于Activity和service通讯
@@ -73,14 +72,14 @@ public class UtilService extends Service {
         }
     }
 
-    public void SetContext(Context ctt)
-    {
+    public void SetContext(Context ctt) {
         context = ctt;
         audioHelper.AudioContext(context);
     }
 
     private String locationProvider;
     private LocationManager locationManager;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -110,59 +109,57 @@ public class UtilService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (Build.VERSION.SDK_INT <android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
             startForeground(GRAY_SERVICE_ID, new Notification());
-        }
-        else if(Build.VERSION.SDK_INT>=android.os.Build.VERSION_CODES.O)
-        {
+        } else if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             startForegroundService();
         }
         acquireWakeLock();
-        handler.postDelayed(runnable, 1000*10);//延时多长时间启动定时器
+        handler.postDelayed(runnable, 1000 * 10);//延时多长时间启动定时器
         return START_STICKY;
     }
 
-    Handler  handler = new Handler();
-    Runnable  runnable = new Runnable() {
+    Handler handler = new Handler();
+    Runnable runnable = new Runnable() {
         @Override
         public void run() {
             // handler自带方法实现定时器
             //Log.d("Unity", "后台开始播放音乐");
             //OnPlayAudio(false,"Mapbackground.mp3");
             //OnPlayAudio(true,"http://cdn.lixiaoqian.com/gulangyu/audio/640894fb683511cfb486364dddd9620d.mp3");
-            handler.postDelayed(this, 1000*10);//每隔3s执行
+            handler.postDelayed(this, 1000 * 10);//每隔3s执行
         }
     };
 
     PowerManager.WakeLock wakeLock;//锁屏唤醒
+
     //获取电源锁，保持该服务在屏幕熄灭时仍然获取CPU时，保持运行
     @SuppressLint("InvalidWakeLockTag")
-    private void acquireWakeLock()
-    {
-        if (null == wakeLock)
-        {
-            PowerManager pm = (PowerManager)this.getSystemService(Context.POWER_SERVICE);
-            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK|PowerManager.ON_AFTER_RELEASE, "PostLocationService");
-            if (null != wakeLock)
-            {
+    private void acquireWakeLock() {
+        if (null == wakeLock) {
+            PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, "PostLocationService");
+            if (null != wakeLock) {
                 wakeLock.acquire();
             }
         }
     }
+
     public UtilService() {
         audioHelper = new AudioHelper();
         locationHelp = new LocationHelp();
     }
+
     public void OnInitAudio(String url) {
         audioHelper.InitUrl(url);
     }
 
-    public void OnPlayAudio(boolean isNetWork,String name){
+    public void OnPlayAudio(boolean isNetWork, String name) {
         try {
             if (!isNetWork) {
-                audioHelper.Play(0,name);
+                audioHelper.Play(0, name);
             } else {
-                audioHelper.PlayNetWork(0,name);
+                audioHelper.PlayNetWork(0, name);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -173,13 +170,21 @@ public class UtilService extends Service {
         audioHelper.Pause();
     }
 
+    public void OnContinueAudio() {
+        audioHelper.Continue();
+    }
+
     public void OnStopAudio() {
         audioHelper.Stop();
     }
 
-    public void SetVolume(float value)
-    {
+    public void SetVolume(float value) {
         audioHelper.SetVolume(value);
+    }
+
+    public int GetPlayStatus(String url)
+    {
+        return audioHelper.GetPlayStatus(url);
     }
 
     public void OnLocation(Activity activity){
@@ -191,12 +196,7 @@ public class UtilService extends Service {
         locationHelp.OnMinDistance(minDis);
     }
 
-    public void OnVoiceLocationInfo(String voiceInfo) {  locationHelp.OnVoiceLocationInfo(voiceInfo);
-    }
-
-    public void OnStationSites(String siteInfos) {
-        locationHelp.OnStationSites(siteInfos);
-    }
+    public void OnVoiceLocationInfo(String voiceInfo) {  locationHelp.OnVoiceLocationInfo(voiceInfo);}
 
     public void SetPlay(double lng, double lat) {
         locationHelp.SetPlay(lng,lat);
@@ -207,10 +207,7 @@ public class UtilService extends Service {
         locationHelp.SetPause();
     }
 
-    public void SetContinue()
-    {
-        locationHelp.SetContinue();
-    }
+    public void SetContinue(){locationHelp.SetContinue(); }
 
     public void SetNext() {
         locationHelp.SetNext();
@@ -227,4 +224,6 @@ public class UtilService extends Service {
     public void Reset() {
         locationHelp.Reset();
     }
+
+
 }
