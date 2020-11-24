@@ -201,7 +201,7 @@ public class LocationHelp extends Activity {
                     && befoerVoiceLocation.id == curVoiceLocation.id) {
                 return;
             }
-
+            if(curVoiceLocation==null)return;
 //            Log.d(TAG, "curVoiceLocation: "+curVoiceLocation.gps);
 //            Log.d(TAG, "latitude: "+latitude+"|longitude"+longitude);
             double log = Double.parseDouble(curVoiceLocation.gps.split(",")[0]);
