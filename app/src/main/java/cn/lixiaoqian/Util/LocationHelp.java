@@ -117,7 +117,9 @@ public class LocationHelp extends Activity {
             final double latitude = location.getLatitude();//获取纬度，平行
             final double longitude = location.getLongitude();//获取经度，垂直
             latLongString = latitude + "|" + longitude;
-            //Log.d(TAG, "locationService onLocationChanged: " + latLongString);
+            Log.d(TAG, "locationService getgps: " + latLongString);
+            //latLongString = GpsCorrect.GetGpsCorrect(latitude,longitude);
+            Log.d(TAG, "locationService getgpscorrect: " + latLongString);
             UnityPlayer.UnitySendMessage("LocationManager", "LocResult", latLongString);
             SetPlay(longitude, latitude);
         }
@@ -178,7 +180,7 @@ public class LocationHelp extends Activity {
     }
 
     public void SetPlay(Double longitude,Double latitude ) {
-//        Log.d(TAG, "VoiceLocationList1: "+VoiceLocationList.size());
+        Log.d(TAG, "VoiceLocationList1: "+VoiceLocationList.size());
         if (!isAutoAudio) {
             return;
         }
@@ -195,6 +197,11 @@ public class LocationHelp extends Activity {
                     minDis = dis;
                     curVoiceLocation = voiceLocation;
                 }
+                if(voiceLocation.gps=="118.0547180176,24.4478721619")
+                {
+                    Log.d(TAG, "dis222: " + dis);
+                    Log.d(TAG, "minDis222: " + minDis);
+                }
             }
             if (befoerVoiceLocation != null && curVoiceLocation != null
                     && befoerVoiceLocation.type == curVoiceLocation.type
@@ -202,12 +209,12 @@ public class LocationHelp extends Activity {
                 return;
             }
             if(curVoiceLocation==null)return;
-//            Log.d(TAG, "curVoiceLocation: "+curVoiceLocation.gps);
-//            Log.d(TAG, "latitude: "+latitude+"|longitude"+longitude);
+            Log.d(TAG, "curVoiceLocation: "+curVoiceLocation.gps);
+            Log.d(TAG, "latitude: "+latitude+"|longitude"+longitude);
             double log = Double.parseDouble(curVoiceLocation.gps.split(",")[0]);
             double lat = Double.parseDouble(curVoiceLocation.gps.split(",")[1]);
             double dis = GetDistance(latitude, longitude, lat, log);
-//            Log.d(TAG, "dis: "+dis);
+            Log.d(TAG, "dis: "+dis);
             if (dis < this.minArriveDistance) {
                 if (!HadVoiceLocationList.contains(curVoiceLocation)) {
                     if (curVoiceLocation.is_once) {
@@ -219,7 +226,7 @@ public class LocationHelp extends Activity {
                     return;
                 }
                 befoerVoiceLocation = curVoiceLocation;
-//                Log.d(TAG, "curVoiceLocation2: "+curVoiceLocation.audios);
+                Log.d(TAG, "curVoiceLocation2: "+curVoiceLocation.audios);
                 SetStop();
                 PlayVoiceList.addAll(curVoiceLocation.audios);
                 PlayVoice();
