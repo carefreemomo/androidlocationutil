@@ -74,14 +74,7 @@ public class GpsCorrect {
     //region  GCJ-02 to WGS-84
     public static LatLonPoint ToGPSPoint(double latitude, double longitude) {
         LatLonPoint dev = calDev(latitude, longitude);
-        double retLat = latitude - dev.getLatitude();
-        double retLon = longitude - dev.getLongitude();
-        for (int i = 0; i < 1; i++) {
-            dev = calDev(retLat, retLon);
-            retLat = latitude - dev.getLatitude();
-            retLon = longitude - dev.getLongitude();
-        }
-        return new LatLonPoint(retLat, retLon);
+        return dev;
     }
 
     // 计算偏差
@@ -97,7 +90,7 @@ public class GpsCorrect {
         double sqrtMagic = Math.sqrt(magic);
         dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * pi);
         dLon = (dLon * 180.0) / (a / sqrtMagic * Math.cos(radLat) * pi);
-        return new LatLonPoint(dLat, dLon);
+        return new LatLonPoint(dLat+wgLat, dLon+wgLon);
     }
 
     // 判断坐标是否在国外
