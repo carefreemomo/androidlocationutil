@@ -22,7 +22,7 @@ public class AudioHelper extends Activity {
         context= ctt;
     }
 
-    public void Play(final int index, String name) throws IOException {
+    public void Play(final int index,final String name) throws IOException {
         CurUrl=name;
         Log.d("Unity", "播放原生本地音乐");
         AssetFileDescriptor fileDescriptor = context.getAssets().openFd(name);
@@ -40,19 +40,19 @@ public class AudioHelper extends Activity {
                 mediaPlayer.seekTo(index);
                 mediaPlayer.start();
                 if (listener != null) {
-                    listener.OnStartListener();
+                    listener.OnStartListener(name);
                 }
             }
         });
 
-        Log.d("Unity", "开始播放原生本地音乐");
+//        Log.d("Unity", "开始播放原生本地音乐");
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                Log.d("Unity", "结束播放原生本地音乐");
+//                Log.d("Unity", "结束播放原生本地音乐");
                 UnityPlayer.UnitySendMessage("AudioManager", "MobileAudioEnd", "");
                 if (listener != null) {
-                    listener.OnEndListener();
+                    listener.OnEndListener(name);
                 }
             }
         });
@@ -76,7 +76,7 @@ public class AudioHelper extends Activity {
         }
         mediaPlayer.reset();
         mediaPlayer.setDataSource(headUrl + url);//设置播放的数据源。
-        Log.d(TAG, "PlayNetWork: " + headUrl + "|" + url);
+//        Log.d(TAG, "PlayNetWork: " + headUrl + "|" + url);
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mediaPlayer.setLooping(false);//是否循环播放
         mediaPlayer.prepareAsync();//网络视频，异步
@@ -86,7 +86,7 @@ public class AudioHelper extends Activity {
                 mediaPlayer.seekTo(index);
                 mediaPlayer.start();
                 if (listener != null) {
-                    listener.OnStartListener();
+                    listener.OnStartListener(url);
                 }
             }
         });
@@ -95,10 +95,10 @@ public class AudioHelper extends Activity {
             public void onCompletion(MediaPlayer mp) {
                 CurUrl="";
                 CurIndex=0;
-                Log.d(TAG, "结束播放网络音乐");
+//                Log.d(TAG, "结束播放网络音乐");
                 UnityPlayer.UnitySendMessage("AudioManager", "MobileAudioEnd", "");
                 if (listener != null) {
-                    listener.OnEndListener();
+                    listener.OnEndListener(url);
                 }
             }
         });
@@ -192,8 +192,8 @@ public class AudioHelper extends Activity {
      * 定义一个接口
      */
     public interface onListener{
-        void OnStartListener();
-        void OnEndListener();
+        void OnStartListener(String url);
+        void OnEndListener(String url);
         void OnProgress(float progress);
     }
     /**

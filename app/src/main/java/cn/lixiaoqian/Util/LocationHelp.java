@@ -70,12 +70,12 @@ public class LocationHelp extends Activity {
         InitLocation();
         this.audioHelper.setListener(new AudioHelper.onListener() {
             @Override
-            public void OnStartListener() {
-                UnityPlayer.UnitySendMessage("LocationManager", "StartResult", "");
+            public void OnStartListener(String url) {
+                UnityPlayer.UnitySendMessage("LocationManager", "StartResult", url);
         }
             @Override
-            public void OnEndListener() {
-                UnityPlayer.UnitySendMessage("LocationManager", "EndResult", "");
+            public void OnEndListener(String url) {
+                UnityPlayer.UnitySendMessage("LocationManager", "EndResult", url);
                 if (PlayVoiceList.size() > 0) {
                     PlayVoiceList.remove(0);
                 }
@@ -143,6 +143,7 @@ public class LocationHelp extends Activity {
                     //latLongString = GpsCorrect.GetGpsCorrect(latitude,longitude);
                     //Log.d(TAG, "locationService getgpscorrect: " + latLongString);
                     UnityPlayer.UnitySendMessage("LocationManager", "LocResult", latLongString);
+                    SetPlay(latLonPoint.getLongitude(), latLonPoint.getLatitude());
                 }
             }
 //                StringBuffer sb = new StringBuffer();
@@ -212,7 +213,7 @@ public class LocationHelp extends Activity {
                 str = "没有GPS定位权限，建议开启gps定位权限";
                 break;
         }
-        Log.d(TAG, "getGPSStatusString: "+str);
+//        Log.d(TAG, "getGPSStatusString: "+str);
         return str;
     }
 
@@ -346,7 +347,7 @@ public class LocationHelp extends Activity {
     }
 
     public void SetPlay(Double longitude,Double latitude ) {
-        Log.d(TAG, "VoiceLocationList1: "+VoiceLocationList.size());
+//        Log.d(TAG, "VoiceLocationList1: "+VoiceLocationList.size());
         if (!isAutoAudio) {
             return;
         }
@@ -363,11 +364,11 @@ public class LocationHelp extends Activity {
                     minDis = dis;
                     curVoiceLocation = voiceLocation;
                 }
-                if(voiceLocation.gps=="118.0547180176,24.4478721619")
-                {
-                    Log.d(TAG, "dis222: " + dis);
-                    Log.d(TAG, "minDis222: " + minDis);
-                }
+//                if(voiceLocation.gps=="118.0547180176,24.4478721619")
+//                {
+//                    Log.d(TAG, "dis222: " + dis);
+//                    Log.d(TAG, "minDis222: " + minDis);
+//                }
             }
             if (befoerVoiceLocation != null && curVoiceLocation != null
                     && befoerVoiceLocation.type == curVoiceLocation.type
@@ -375,12 +376,12 @@ public class LocationHelp extends Activity {
                 return;
             }
             if(curVoiceLocation==null)return;
-            Log.d(TAG, "curVoiceLocation: "+curVoiceLocation.gps);
-            Log.d(TAG, "latitude: "+latitude+"|longitude"+longitude);
+//            Log.d(TAG, "curVoiceLocation: "+curVoiceLocation.gps);
+//            Log.d(TAG, "latitude: "+latitude+"|longitude"+longitude);
             double log = Double.parseDouble(curVoiceLocation.gps.split(",")[0]);
             double lat = Double.parseDouble(curVoiceLocation.gps.split(",")[1]);
             double dis = GetDistance(latitude, longitude, lat, log);
-            Log.d(TAG, "dis: "+dis);
+//            Log.d(TAG, "dis: "+dis);
             if (dis < this.minArriveDistance) {
                 if (!HadVoiceLocationList.contains(curVoiceLocation)) {
                     if (curVoiceLocation.is_once) {
@@ -392,7 +393,7 @@ public class LocationHelp extends Activity {
                     return;
                 }
                 befoerVoiceLocation = curVoiceLocation;
-                Log.d(TAG, "curVoiceLocation2: "+curVoiceLocation.audios);
+//                Log.d(TAG, "curVoiceLocation2: "+curVoiceLocation.audios);
                 SetStop();
                 PlayVoiceList.addAll(curVoiceLocation.audios);
                 PlayVoice();
@@ -449,6 +450,7 @@ public class LocationHelp extends Activity {
     public void SetOn(boolean isOn)
     {
         isAutoAudio=isOn;
+        Log.d(TAG, "SetOn: "+isAutoAudio);
     }
 
     public void Reset()
