@@ -39,6 +39,8 @@ import android.os.Bundle;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hiyorin.permission.PermissionPlugin;
+import com.umeng.analytics.MobclickAgent;
+import com.umeng.commonsdk.UMConfigure;
 import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
 
@@ -116,10 +118,12 @@ public class UtilActivity extends UnityPlayerActivity {
             mUnityPlayer.resume();
             mUnityPlayer.windowFocusChanged(true);
         }
+        MobclickAgent.onPause(this);
     }
     @Override
     protected void onResume() {
         super.onResume();
+        MobclickAgent.onResume(this);
     }
 
     @Override
@@ -259,5 +263,25 @@ public class UtilActivity extends UnityPlayerActivity {
     {
         utilService.Reset();
     }
+    //endregion
+
+    //region ###友盟统计
+    //应用申请的Appkey
+    public final String APP_KEY = "609c8f40c9aacd3bd4d2b8d1";
+    //应用申请的UmengMessageSecret
+    public final String MESSAGE_SECRET = "733e0f1cb19bfdb75f68a3fabd01e5e9";
+    //应用申请的App_Master_Secret
+    public final String App_Master_Secret = "oihxb5wazouthrqmaeewj5ljprnzvqxp";
+    //渠道名称
+    public final String CHANNEL = "Umeng";
+
+
+    public void InitUMeng(String appkey,String channel,String pushSecret){
+
+        UMConfigure.init(context,appkey,channel,UMConfigure.DEVICE_TYPE_PHONE,pushSecret);
+        //设置Auto就不需要onResume/onPause埋点
+        MobclickAgent.setPageCollectionMode((MobclickAgent.PageMode.AUTO));
+    }
+
     //endregion
 }
