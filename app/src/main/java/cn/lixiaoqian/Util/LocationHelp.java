@@ -403,6 +403,8 @@ public class LocationHelp extends Activity {
 
     public void SetPause()
     {
+        if(audioHelper==null)
+            return;
         if (PlayVoiceList.size() > 0) {
             audioHelper.Pause();
         }
@@ -423,6 +425,8 @@ public class LocationHelp extends Activity {
 
     public void SetContinue()
     {
+        if(audioHelper==null)
+        return;
         if(PlayVoiceList.size() > 0)
         {
             audioHelper.Continue();
@@ -431,12 +435,16 @@ public class LocationHelp extends Activity {
 
     public void SetStop()
     {
+        if(audioHelper==null)
+        return;
         audioHelper.Stop();
         PlayVoiceList.clear();
     }
 
     public void PlayVoice() {
 //        Log.d(TAG, "PlayVoiceLength: "+PlayVoiceList.size());
+        if(audioHelper==null)
+            return;
         try {
             if (PlayVoiceList.size() > 0) {
 //                Log.d(TAG, "PlayVoice: "+PlayVoiceList.get(0));
